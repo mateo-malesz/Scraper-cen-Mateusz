@@ -17,14 +17,15 @@ def scrap_website(url):
             #print(soup.text)
 
             # Najpierw sprawdź, czy strona zawiera '...'
-            if '3kropki.pl' in soup.text:
+            #Trzeba podmienić in soup.text na url
+            if '3kropki.pl' in url:
                 element = soup.find(class_="k3_font_01 k3_pbc_price")
                 if element:
                     return f"Cena: {element.text.strip()}"
                 else:
                     return "Nie znaleziono ceny."
 
-            if 'masteredukacja.pl' in soup.text:
+            if 'masteredukacja.pl' in url:
                 element = soup.find(itemprop="price")
                 if element:
                     #return f"Cena: {element.text.strip()}"
@@ -32,7 +33,7 @@ def scrap_website(url):
                 else:
                     return "Nie znaleziono ceny."
 
-            if 'ŚwiatProgramow.pl' in soup.text:
+            if 'swiatprogramow.pl' in url:
                 element = soup.find(id="st_product_options-price-brutto")
                 if element:
                     # Bezpośrednio przekształcamy zawartość tekstową elementu na string
@@ -43,7 +44,7 @@ def scrap_website(url):
                 else:
                     return "Nie znaleziono ceny."
 
-            if 'harpo.com' in soup.text:
+            if 'harpo.com' in url:
                 element = (soup.find_all('span', class_='woocommerce-Price-amount amount'))
                 if len(element) >= 2:
                     # Wybieranie drugiego elementu z listy
@@ -55,22 +56,32 @@ def scrap_website(url):
                 else:
                     return "Nie znaleziono ceny."
 
-
-            if 'skleporto' in soup.text:
+            if 'skleporto' in url:
                 element = soup.find(itemprop="price")
                 if element:
                     return f"Cena: {element.text.strip()}"
                 else:
                     return "Nie znaleziono ceny."
 
-            if 'rerek.pl' in soup.text:
-                element = soup.find(class_="st_product_options-price-brutto")
+            if 'rerek.pl' in url:
+                element = soup.find(id="st_product_options-price-brutto")
                 if element:
                     return f"Cena: {element.text.strip()}"
                 else:
                     return "Nie znaleziono ceny."
 
-            if 'arante.pl' in soup.text:
+            if 'krainazabawy.pl' in url:
+                element = soup.find('span', class_='current-price-value')
+                #print(element)
+                # Sprawdzenie, czy element został znaleziony, i wyciągnięcie wartości atrybutu 'content'
+                if element:
+                    content_value = element.get('content')  # Można użyć również: span_element['content']
+                    print(f"Cena: {content_value}")
+                    return f"Cena: {content_value.strip()}"
+                else:
+                    return "Nie znaleziono ceny."
+
+            if 'arante.pl' in url:
                 element = soup.find(id="st_product_options-price-brutto")
                 # print("Sprawdzam Arante")
                 if element:
@@ -103,6 +114,11 @@ def on_import_urls():
 
     for row in sheet.iter_rows(min_row=1, values_only=True):
         product_id, our_url, competitor_urls = row[0], row[1], row[2]
+
+        if product_id is None:
+            print("\nKoniec pliku")
+            break
+
         print(f"\nPrzetwarzanie produktu {product_id}...")
 
         result = scrap_website(our_url)
@@ -115,8 +131,8 @@ def on_import_urls():
         ourPriceFloat = ourPriceFloat.replace(",", ".")
         #print(ourPriceFloat)
         ourPriceFloat = ourPriceFloat.replace(" ", "")
-        float(ourPriceFloat)
-        print(ourPriceFloat)
+        ourPriceFloat = float(ourPriceFloat)
+        #print(ourPriceFloat)
 
         print(f"ID Produktu: {product_id}, URL: {our_url}, {result}")
         result_text.insert(tk.INSERT, f"ID Produktu: {product_id}, URL: {our_url}, {result}\n")
@@ -128,27 +144,29 @@ def on_import_urls():
                     result = scrap_website(url.strip())
 
                     concurentPrice = result
-                    concurentPriceFloat = concurentPrice.strip()  #Usuwamy białe znaki na początku i na końcu
-                    print(concurentPriceFloat)
-                    concurentPriceFloat = concurentPriceFloat.replace("zł", "")  #Usuwamy niechciane znaki
-                    concurentPriceFloat = concurentPriceFloat.replace("Cena: ", "")
-                    print(concurentPriceFloat)
-                    concurentPriceFloat = concurentPriceFloat.replace(",", ".")
-                    print(concurentPriceFloat)
-                    concurentPriceFloat = concurentPriceFloat.replace(" ", "")
-                    concurentPriceFloat = re.sub(r'\s+', '', concurentPriceFloat)
-                    # float(concurentPriceFloat)
-                    print(concurentPriceFloat)
+                    if result is not None and "Nie znaleziono ceny." not in result and "Nie udało się połączyć z stroną." not in result:
+                        concurentPriceFloat = concurentPrice.strip()  #Usuwamy białe znaki na początku i na końcu
+                        #print(concurentPriceFloat)
+                        concurentPriceFloat = concurentPriceFloat.replace("zł", "")  #Usuwamy niechciane znaki
+                        concurentPriceFloat = concurentPriceFloat.replace("Cena: ", "")
+                        #print(concurentPriceFloat)
+                        concurentPriceFloat = concurentPriceFloat.replace(",", ".")
+                        #print(concurentPriceFloat)
+                        concurentPriceFloat = concurentPriceFloat.replace(" ", "")
+                        concurentPriceFloat = re.sub(r'\s+', '', concurentPriceFloat)
+                        concurentPriceFloat = float(concurentPriceFloat)
+
                     minPrice = ourPriceFloat
                     if concurentPriceFloat < ourPriceFloat:
                         minPrice = concurentPriceFloat
                         print(f"Minimalna cena dla {product_id}: {url.strip()}, {minPrice}")
+                    else:
+                        print(f"Konkurencyjny URL dla {product_id}: {url.strip()}, {result}")
+                        result_text.insert(tk.INSERT, f"Konkurencyjny URL dla {product_id}: {url.strip()}, {result}")
 
                     if result is None:
                         result = "Brak wyniku"
 
-                    print(f"Konkurencyjny URL dla {product_id}: {url.strip()}, {result}")
-                    result_text.insert(tk.INSERT, f"Konkurencyjny URL dla {product_id}: {url.strip()}, {result}")
         else:
             print(f"Brak linków konkurencji dla produktu {product_id}.")
 
