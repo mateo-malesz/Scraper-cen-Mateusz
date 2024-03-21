@@ -4,7 +4,27 @@ import tkinter as tk
 from tkinter import scrolledtext, filedialog, messagebox
 import openpyxl
 import re
+import sys
 
+
+class DualOutput:
+    def __init__(self, filename):
+        self.terminal = sys.stdout
+        self.log = open(filename, "w")
+
+    def write(self, message):
+        self.terminal.write(message)
+        self.log.write(message)
+
+    def flush(self):
+        self.terminal.flush()
+        self.log.flush()
+
+    #Chyba warto dodać zamykanie pliku na końcu
+    #def close(self):
+        #self.log.close()
+
+sys.stdout = DualOutput("output.txt")
 
 def scrap_website(url):
     try:
@@ -214,3 +234,6 @@ result_text.pack(pady=10)
 #root.config(bg="#26242f")
 
 root.mainloop()
+
+#Zamykanie pliku logów
+#sys.stdout.close()
