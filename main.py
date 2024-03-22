@@ -37,11 +37,10 @@ def scrap_website(url):
             #print(soup.text)
 
             # Najpierw sprawdź, czy strona zawiera '...'
-            #Trzeba podmienić in soup.text na url
             if '3kropki.pl' in url:
                 element = soup.find(class_="k3_font_01 k3_pbc_price")
                 if element:
-                    return f"Cena: {element.text.strip()}"
+                    return element.text.strip()
                 else:
                     return "Nie znaleziono ceny."
 
@@ -60,7 +59,7 @@ def scrap_website(url):
                     #  element_text = element.text.strip()  # Usuwamy białe znaki na początku i na końcu
                     #cleaned_text = element_text.replace(" *", "")  # Usuwamy niechciane znaki
                     #  return f"Cena: {cleaned_text}"
-                    return f"Cena: {element.text.strip()}"
+                    return element.text.strip()
                 else:
                     return "Nie znaleziono ceny."
 
@@ -72,21 +71,21 @@ def scrap_website(url):
                     # Pobranie zawartości tekstowej elementu <bdi>
                     price_text = second_price_element.bdi.text.strip()
                     price_text = price_text.replace(".", "")
-                    return f"Cena: {price_text}"
+                    return price_text
                 else:
                     return "Nie znaleziono ceny."
 
             if 'skleporto' in url:
                 element = soup.find(itemprop="price")
                 if element:
-                    return f"Cena: {element.text.strip()}"
+                    return element.text.strip()
                 else:
                     return "Nie znaleziono ceny."
 
             if 'rerek.pl' in url:
                 element = soup.find(id="st_product_options-price-brutto")
                 if element:
-                    return f"Cena: {element.text.strip()}"
+                    return element.text.strip()
                 else:
                     return "Nie znaleziono ceny."
 
@@ -96,8 +95,8 @@ def scrap_website(url):
                 # Sprawdzenie, czy element został znaleziony, i wyciągnięcie wartości atrybutu 'content'
                 if element:
                     content_value = element.get('content')  # Można użyć również: span_element['content']
-                    print(f"Cena: {content_value}")
-                    return f"Cena: {content_value.strip()}"
+                    #print(f"Cena: {content_value}")
+                    return content_value.strip()
                 else:
                     return "Nie znaleziono ceny."
 
@@ -154,10 +153,13 @@ def on_import_urls():
         ourPriceFloat = float(ourPriceFloat)
         #print(ourPriceFloat)
 
-        print(f"ID Produktu: {product_id}, URL: {our_url}, {result}")
-        result_text.insert(tk.INSERT, f"ID Produktu: {product_id}, URL: {our_url}, {result}\n")
+        minPrice = ourPriceFloat
+
+        print(f"ID Produktu: {product_id}, URL: {our_url}, Cena: {result}")
+        result_text.insert(tk.INSERT, f"ID Produktu: {product_id}, URL: {our_url}, Cena: {result}\n")
 
         if competitor_urls:
+            found = 0
             competitor_urls_list = competitor_urls.split(';')
             for url in competitor_urls_list:
                 if url:  # Dodatkowo sprawdzamy, czy URL nie jest pusty
@@ -176,17 +178,21 @@ def on_import_urls():
                         concurentPriceFloat = re.sub(r'\s+', '', concurentPriceFloat)
                         concurentPriceFloat = float(concurentPriceFloat)
 
-                    minPrice = ourPriceFloat
-                    if concurentPriceFloat < ourPriceFloat:
-                        minPrice = concurentPriceFloat
-                        print(f"Minimalna cena dla {product_id}: {url.strip()}, {minPrice}")
-                    else:
-                        print(f"Konkurencyjny URL dla {product_id}: {url.strip()}, {result}")
-                        result_text.insert(tk.INSERT, f"Konkurencyjny URL dla {product_id}: {url.strip()}, {result}")
+                        if concurentPriceFloat < minPrice:
+                            minPrice = concurentPriceFloat
+                            minUrl = url
+                            percentDifference = ((ourPriceFloat - minPrice) / ourPriceFloat) * 100
+                            priceDifference = ourPriceFloat - minPrice
+                            found = 1
+
+                        print(f"Konkurencyjny URL dla {product_id}: {url.strip()}, Cena: {result}")
+                        result_text.insert(tk.INSERT, f"Konkurencyjny URL dla {product_id}: {url.strip()}, Cena: {result}")
 
                     if result is None:
                         result = "Brak wyniku"
 
+            if found == 1:
+                print(f"Minimalna cena dla {product_id}: {minUrl.strip()}, {minPrice} zł, Cena w Arante {ourPrice} wyższa o: {priceDifference:.2f} zł ({percentDifference:.2f}%)")
         else:
             print(f"Brak linków konkurencji dla produktu {product_id}.")
 
