@@ -156,7 +156,7 @@ def on_import_urls():
         minPrice = ourPriceFloat
 
         print(f"ID Produktu: {product_id}, URL: {our_url}, Cena: {result}")
-        result_text.insert(tk.INSERT, f"ID Produktu: {product_id}, URL: {our_url}, Cena: {result}\n")
+        #result_text.insert(tk.INSERT, f"ID Produktu: {product_id}, URL: {our_url}, Cena: {result}\n")
 
         if competitor_urls:
             found = 0
@@ -186,15 +186,19 @@ def on_import_urls():
                             found = 1
 
                         print(f"Konkurencyjny URL dla {product_id}: {url.strip()}, Cena: {result}")
-                        result_text.insert(tk.INSERT, f"Konkurencyjny URL dla {product_id}: {url.strip()}, Cena: {result}")
+                        #result_text.insert(tk.INSERT, f"Konkurencyjny URL dla {product_id}: {url.strip()}, Cena: {result}")
 
                     if result is None:
                         result = "Brak wyniku"
 
             if found == 1:
                 print(f"Minimalna cena dla {product_id}: {minUrl.strip()}, {minPrice} zł, Cena w Arante {ourPrice} wyższa o: {priceDifference:.2f} zł ({percentDifference:.2f}%)")
+                result_text.insert(tk.INSERT, f"\nMinimalna cena dla {product_id}: {minUrl.strip()}, {minPrice} zł, Cena w Arante {ourPrice} wyższa o: {priceDifference:.2f} zł ({percentDifference:.2f}%)\n")
+            else:
+                result_text.insert(tk.INSERT, f"\n{product_id}: CENA OK\n")
         else:
-            print(f"Brak linków konkurencji dla produktu {product_id}.")
+            print(f"Brak linków konkurencji dla produktu: {product_id}")
+            result_text.insert(tk.INSERT, f"\nBrak linków konkurencji dla produktu: {product_id}\n")
 
 
 def on_export_results():
@@ -219,7 +223,7 @@ def on_export_results():
 
 # Ustawienie głównego okna aplikacji
 root = tk.Tk()
-root.title("Scraper Cen IXION v2024.03.21")
+root.title("Scraper Cen IXION v2024.03.26")
 
 tk.Label(root, text="URL:").pack(pady=5)
 url_entry = tk.Entry(root, width=50)
@@ -234,7 +238,7 @@ import_button.pack(pady=5)
 export_button = tk.Button(root, text="Export Results to Excel", command=on_export_results)
 export_button.pack(pady=5)
 
-result_text = scrolledtext.ScrolledText(root, height=10, width=50)
+result_text = scrolledtext.ScrolledText(root, height=40, width=100)
 result_text.pack(pady=10)
 
 #root.config(bg="#26242f")
