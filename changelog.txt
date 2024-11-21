@@ -1,0 +1,11 @@
+14.11.2024
+- Dodano sprawdzanie z wyłączeniem SSL tylko dla empis
+
+17.10.2024
+- drobne poprawki błędów przy skanowaniu listy
+- przypisano wszystkie linki z asany do arkusza
+
+16.10.2024
+- zmieniono działanie skanowania, przedtem program sprawdzał cenę u nas pomimo braku linków konkurencji, teraz sprawdza tylko jeśli są
+- poprawiono czyszczenie danych w export-short
+- zakomentowano export z okna programu, zostawiono tylko export z cenami do porównania
